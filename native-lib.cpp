@@ -2,24 +2,32 @@
 #include <string>
 #include <libyuv/convert.h>
 
+static uint8_t* GetDirectBufferAddress(JNIEnv* env, jobject byteBuffer)
+{
+    jclass cls = env->GetObjectClass(byteBuffer);
+    jfieldID fid = env->GetFieldID(cls, "data","Ljava/nio/ByteBuffer;");
+    jobject bar = env->GetObjectField(byteBuffer, fid);
+    return (uint8_t*)env->GetDirectBufferAddress(bar);
+}
+
 extern "C" JNIEXPORT int JNICALL
 Java_android_media_libyuv_Libyuv_ARGBToI420(JNIEnv* env,
                                             jobject /* this */,
-                                            const jbyteArray src_argb,
+                                            const jobject src_argb,
                                             int src_stride_argb,
-                                            jbyteArray dst_y,
+                                            jobject dst_y,
                                             int dst_stride_y,
-                                            jbyteArray dst_u,
+                                            jobject dst_u,
                                             int dst_stride_u,
-                                            jbyteArray dst_v,
+                                            jobject dst_v,
                                             int dst_stride_v,
                                             int width,
-                                            int height) {
-
-    jbyte *srcArgb = env->GetByteArrayElements(src_argb, NULL);
-    jbyte *destY = env->GetByteArrayElements(dst_y, NULL);
-    jbyte *destU = env->GetByteArrayElements(dst_u, NULL);
-    jbyte *destV = env->GetByteArrayElements(dst_v, NULL);
+                                            int height)
+{
+    uint8_t *srcArgb = GetDirectBufferAddress(env, src_argb);
+    uint8_t *destY = GetDirectBufferAddress(env, dst_y);
+    uint8_t *destU = GetDirectBufferAddress(env, dst_u);
+    uint8_t *destV = GetDirectBufferAddress(env, dst_v);
 
     int nRet = libyuv::ARGBToI420((const uint8_t*)srcArgb,
                       src_stride_argb,
@@ -32,55 +40,50 @@ Java_android_media_libyuv_Libyuv_ARGBToI420(JNIEnv* env,
                       width,
                       height);
 
-    env->ReleaseByteArrayElements(src_argb, srcArgb, 0);
-    env->ReleaseByteArrayElements(dst_y, destY, 0);
-    env->ReleaseByteArrayElements(dst_u, destU, 0);
-    env->ReleaseByteArrayElements(dst_v, destV, 0);
-
     return nRet;
 }
 
 extern "C" JNIEXPORT int JNICALL
 Java_android_media_libyuv_Libyuv_I420Blend(JNIEnv* env,
                                            jobject /* this */,
-                                           const jbyteArray src_y0,
+                                           const jobject src_y0,
                                            int src_stride_y0,
-                                           const jbyteArray src_u0,
+                                           const jobject src_u0,
                                            int src_stride_u0,
-                                           const jbyteArray src_v0,
+                                           const jobject src_v0,
                                            int src_stride_v0,
-                                           const jbyteArray src_y1,
+                                           const jobject src_y1,
                                            int src_stride_y1,
-                                           const jbyteArray src_u1,
+                                           const jobject src_u1,
                                            int src_stride_u1,
-                                           const jbyteArray src_v1,
+                                           const jobject src_v1,
                                            int src_stride_v1,
-                                           const jbyteArray alpha,
+                                           const jobject alpha,
                                            int alpha_stride,
-                                           jbyteArray dst_y,
+                                           jobject dst_y,
                                            int dst_stride_y,
-                                           jbyteArray dst_u,
+                                           jobject dst_u,
                                            int dst_stride_u,
-                                           jbyteArray dst_v,
+                                           jobject dst_v,
                                            int dst_stride_v,
                                            int width,
-                                           int height) {
+                                           int height)
+{
+    uint8_t *srcY0 = GetDirectBufferAddress(env, src_y0);
+    uint8_t *srcU0 = GetDirectBufferAddress(env, src_u0);
+    uint8_t *srcV0 = GetDirectBufferAddress(env, src_v0);
 
-    jbyte *srcY0 = env->GetByteArrayElements(src_y0, NULL);
-    jbyte *srcU0 = env->GetByteArrayElements(src_u0, NULL);
-    jbyte *srcV0 = env->GetByteArrayElements(src_v0, NULL);
+    uint8_t *srcY1 = GetDirectBufferAddress(env, src_y1);
+    uint8_t *srcU1 = GetDirectBufferAddress(env, src_u1);
+    uint8_t *srcV1 = GetDirectBufferAddress(env, src_v1);
 
-    jbyte *srcY1 = env->GetByteArrayElements(src_y1, NULL);
-    jbyte *srcU1 = env->GetByteArrayElements(src_u1, NULL);
-    jbyte *srcV1 = env->GetByteArrayElements(src_v1, NULL);
+    uint8_t *alpha0 = GetDirectBufferAddress(env, alpha);
 
-    jbyte *alpha0 = env->GetByteArrayElements(alpha, NULL);
+    uint8_t *destY = GetDirectBufferAddress(env, dst_y);
+    uint8_t *destU = GetDirectBufferAddress(env, dst_u);
+    uint8_t *destV = GetDirectBufferAddress(env, dst_v);
 
-    jbyte *destY = env->GetByteArrayElements(dst_y, NULL);
-    jbyte *destU = env->GetByteArrayElements(dst_u, NULL);
-    jbyte *destV = env->GetByteArrayElements(dst_v, NULL);
-
-    int nRet = libyuv::I420Blend((const uint8_t*)srcY0,
+    return libyuv::I420Blend((const uint8_t*)srcY0,
                                  src_stride_y0,
                                  (const uint8_t*)srcU0,
                                  src_stride_u0,
@@ -102,20 +105,4 @@ Java_android_media_libyuv_Libyuv_I420Blend(JNIEnv* env,
                                  dst_stride_v,
                                  width,
                                  height);
-
-    env->ReleaseByteArrayElements(src_y0, srcY0, 0);
-    env->ReleaseByteArrayElements(src_u0, srcU0, 0);
-    env->ReleaseByteArrayElements(src_v0, srcV0, 0);
-
-    env->ReleaseByteArrayElements(src_y1, srcY1, 0);
-    env->ReleaseByteArrayElements(src_u1, srcU1, 0);
-    env->ReleaseByteArrayElements(src_v1, srcV1, 0);
-
-    env->ReleaseByteArrayElements(alpha, alpha0, 0);
-
-    env->ReleaseByteArrayElements(dst_y, destY, 0);
-    env->ReleaseByteArrayElements(dst_u, destU, 0);
-    env->ReleaseByteArrayElements(dst_v, destV, 0);
-
-    return nRet;
 }

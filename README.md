@@ -1,4 +1,4 @@
-## 从官方https://chromium.googlesource.com/libyuv/libyuv拉取的稳定版本，不定时更新，用于构建Android的版本
+## 从官方https://chromium.googlesource.com/libyuv/libyuv 拉取的稳定版本，不定时更新，用于构建Android的版本
 
 **libyuv** is an open source project that includes YUV scaling and conversion functionality.
 

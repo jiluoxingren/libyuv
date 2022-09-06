@@ -23,17 +23,28 @@ LIST ( SORT			ly_unittest_sources )
 INCLUDE_DIRECTORIES( BEFORE ${ly_inc_dir} )
 
 # this creates the static library (.a)
-ADD_LIBRARY				( ${ly_lib_static} STATIC ${ly_source_files} )
+ADD_LIBRARY				( ${ly_lib_static} STATIC ${ly_source_files})
 
 # this creates the shared library (.so)
-ADD_LIBRARY				( ${ly_lib_shared} SHARED ${ly_source_files} )
+ADD_LIBRARY				( ${ly_lib_shared} SHARED ${ly_source_files} native-lib.cpp)
+
+find_library( # Sets the name of the path variable.
+        log-lib
+
+        # Specifies the name of the NDK library that
+        # you want CMake to locate.
+        log)
+
 SET_TARGET_PROPERTIES	( ${ly_lib_shared} PROPERTIES OUTPUT_NAME "${ly_lib_name}" )
 SET_TARGET_PROPERTIES	( ${ly_lib_shared} PROPERTIES PREFIX "lib" )
+if(WIN32)
+  SET_TARGET_PROPERTIES	( ${ly_lib_shared} PROPERTIES IMPORT_PREFIX "lib" )
+endif()
 
 # this creates the conversion tool
 ADD_EXECUTABLE			( yuvconvert ${ly_base_dir}/util/yuvconvert.cc )
-TARGET_LINK_LIBRARIES	( yuvconvert ${ly_lib_static} )
-
+TARGET_LINK_LIBRARIES	( yuvconvert ${ly_lib_static} ${log-lib})
+TARGET_LINK_LIBRARIES	(${ly_lib_shared} ${log-lib})
 
 INCLUDE ( FindJPEG )
 if (JPEG_FOUND)
